@@ -1,24 +1,15 @@
 ---
-- name: Check status of services
+- name: Kill netcat, switch to webadm, and start netcat
   hosts: all
-  gather_facts: no
-  vars:
-    services_to_check:
-      - sshd
-      - nginx
-      - docker
-
+  become: true
   tasks:
-    - name: Check if service is running
-      ansible.builtin.systemd:
-        name: "{{ item }}"
-        state: started
-      check_mode: yes
-      register: service_check
-      loop: "{{ services_to_check }}"
-      ignore_errors: yes
+    - name: Kill all running netcat (nc) processes
+      shell: pgrep nc | xargs --no-run-if-empty kill -9
+      ignore_errors: true
 
-    - name: Print service status
-      debug:
-        msg: "Service {{ item.item }}: {{ 'RUNNING' if item.changed == False else 'NOT RUNNING' }}"
-      loop: "{{ service_check.results }}"
+    - name: Start netcat as webadm (example: listening on port 9999)
+      become: true
+      become_user: webadm
+      shell: nohup nc -l -p 8080 > /tmp/nc_output.log 2>&1 &
+      args:
+        executable: /bin/bash
