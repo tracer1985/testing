@@ -1,5 +1,5 @@
 ---
-- name: Kill netcat, switch to webadm, and start netcat
+- name: Kill netcat, start as webadm, and show status
   hosts: all
   become: true
   tasks:
@@ -7,9 +7,16 @@
       shell: pgrep nc | xargs --no-run-if-empty kill -9
       ignore_errors: true
 
-    - name: Start netcat as webadm
-      become: true
+    - name: Start netcat as webadm (listening on port 8080)
       become_user: webadm
       shell: nohup nc -l -p 8080 > /tmp/nc_output.log 2>&1 &
       args:
         executable: /bin/bash
+
+    - name: Show status of netcat processes
+      shell: pgrep -af nc
+      register: nc_status
+
+    - name: Display netcat status
+      debug:
+        msg: "{{ nc_status.stdout_lines }}"
