@@ -7,7 +7,7 @@
       shell: pgrep nc | xargs --no-run-if-empty kill -9
       ignore_errors: true
 
-    - name: Start netcat as webadm (example: listening on port 9999)
+    - name: Start netcat as webadm
       become: true
       become_user: webadm
       shell: nohup nc -l -p 8080 > /tmp/nc_output.log 2>&1 &
